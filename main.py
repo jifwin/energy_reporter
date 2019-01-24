@@ -109,8 +109,9 @@ def get_value(msg):
     for msg_byte in msg.split(" "):
         send_byte(bytearray.fromhex(msg_byte))
     response = ser.read(9)
-    response_data = response[3:7]
-    return struct.unpack('>f', response_data)[0]
+    if len(response) == 9:
+        response_data = response[3:7]
+        return struct.unpack('>f', response_data)[0]
 
 
 def send_byte(data):
@@ -127,18 +128,21 @@ while True:
     for (measurement, command) in COMMANDS.items():
         print("Reading %s..." % measurement)
         value = get_value(command)
-        print("%s = %s" % (measurement, value))
-        time.sleep(0.25)
+        if value is not None:
+            print("%s = %s" % (measurement, value))
+            time.sleep(0.25)
 
-        json_body = [
-            {
-                "measurement": measurement,
-                "tags": {
-                },
-                "time": datetime.datetime.now().isoformat(),
-                "fields": {
-                    "value": value
-                }
-            }]
-        client.write_points(json_body)
+            json_body = [
+                {
+                    "measurement": measurement,
+                    "tags": {
+                    },
+                    "time": datetime.datetime.now().isoformat(),
+                    "fields": {
+                        "value": value
+                    }
+                }]
+            client.write_points(json_body)
+        else:
+            print("Failed on read")
     time.sleep(PERIOD)
