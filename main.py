@@ -11,7 +11,8 @@ ser = serial.Serial(
     baudrate=9600,
     parity=serial.PARITY_EVEN,
     stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS)
+    bytesize=serial.EIGHTBITS,
+    timeout=5)
 
 COMMANDS = {
     "L1_VOLTAGE": "01 03 00 0E 00 02 A5 C8",
@@ -119,7 +120,7 @@ def send_byte(data):
 
 PERIOD = 60
 
-client = InfluxDBClient('localhost', 8086, 'root', 'root', 'example')
+client = InfluxDBClient('localhost', 8086, 'root', 'root', 'energy_meter')
 client.create_database('energy_meter')
 
 while True:
@@ -141,6 +142,3 @@ while True:
             }]
         client.write_points(json_body)
     time.sleep(PERIOD)
-
-# todo: add timeout for read
-# todo: add logging
